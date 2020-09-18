@@ -12,10 +12,10 @@ use amethyst::{
     utils::application_root_dir,
 };
 
-mod pong;
+mod tetris;
 mod systems;
 
-use crate::pong::Pong;
+use crate::tetris::Tetris;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -32,12 +32,12 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?
         .with_bundle(UiBundle::<StringBindings>::new())?
         .with(systems::PaddleSystem, "paddle_system", &["input_system"])
-        .with(systems::MoveBallsSystem, "ball_system", &[])
-        .with(systems::WinnerSystem, "winner_system", &["ball_system"])
+        .with(systems::MovePiecesSystem, "pieces_system", &[])
+        .with(systems::WinnerSystem, "winner_system", &["pieces_system"])
         .with(
             systems::BounceSystem,
             "collision_system",
-            &["paddle_system", "ball_system"],
+            &["paddle_system", "pieces_system"],
         )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
@@ -50,7 +50,7 @@ fn main() -> amethyst::Result<()> {
         )?;
 
     let assets_dir = app_root.join("assets");
-    let mut game = Application::new(assets_dir, Pong::default(), game_data)?;
+    let mut game = Application::new(assets_dir, Tetris::default(), game_data)?;
     game.run();
 
     Ok(())

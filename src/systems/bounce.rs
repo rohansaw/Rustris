@@ -4,7 +4,7 @@ use amethyst::{
     ecs::{Join, ReadStorage, System, SystemData, World, WriteStorage},
 };
 
-use crate::pong::{Ball, Paddle, Side, ARENA_HEIGHT};
+use crate::tetris::{Ball, Paddle, Side, ARENA_HEIGHT};
 
 #[derive(SystemDesc)]
 pub struct BounceSystem;

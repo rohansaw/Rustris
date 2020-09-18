@@ -11,6 +11,7 @@ use amethyst::{
 
 pub const ARENA_HEIGHT: f32 = 100.0;
 pub const ARENA_WIDTH: f32 = 100.0;
+pub const BLOCK_SIZE: f32 = 10.0;
 pub const PADDLE_HEIGHT: f32 = 16.0;
 pub const PADDLE_WIDTH: f32 = 4.0;
 pub const BALL_VELOCITY_X: f32 = 30.0;
@@ -18,34 +19,20 @@ pub const BALL_VELOCITY_Y: f32 = 30.0;
 pub const BALL_RADIUS: f32 = 2.0;
 
 #[derive(Default)]
-pub struct Pong {
-    ball_spawn_timer: Option<f32>,
+pub struct Tetris {
     sprite_sheet_handle: Option<Handle<SpriteSheet>>,
 }
 
-impl SimpleState for Pong {
+impl SimpleState for Tetris {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
 
-        self.ball_spawn_timer.replace(1.0);
         self.sprite_sheet_handle.replace(load_sprite_sheet(world));
 
         initialise_paddles(world, self.sprite_sheet_handle.clone().unwrap());
+        add_piece(world, self.sprite_sheet_handle.clone().unwrap());
         initialise_camera(world);
         initialise_scoreboard(world);
-    }
-
-    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
-        if let Some(mut timer) = self.ball_spawn_timer.take() {
-            timer -= data.world.fetch::<Time>().delta_seconds();
-
-            if timer <= 0.0 {
-                initialise_ball(data.world, self.sprite_sheet_handle.clone().unwrap());
-            } else {
-                self.ball_spawn_timer.replace(timer);
-            }
-        }
-        Trans::None
     }
 }
 
@@ -58,6 +45,26 @@ fn initialise_camera(world: &mut World) {
         .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
         .with(transform)
         .build();
+}
+
+pub struct Block;
+
+pub struct Piece {
+    pub blocks: Vec<Block>,
+    pub time_since_move: f32,
+}
+
+impl Piece {
+    fn new() -> Piece {
+        Piece {
+            blocks: vec![Block],
+            time_since_move: 0.0,
+        }
+    }
+}
+
+impl Component for Piece {
+    type Storage = DenseVecStorage<Self>;
 }
 
 #[derive(PartialEq, Eq)]
@@ -84,6 +91,20 @@ impl Paddle {
 
 impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
+}
+
+fn add_piece(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
+    let mut transform = Transform::default();
+    transform.set_translation_xyz(ARENA_WIDTH * 0.5, ARENA_HEIGHT, 0.0);
+
+    let sprite_render = SpriteRender::new(sprite_sheet_handle, 0);
+
+    world
+        .create_entity()
+        .with(sprite_render.clone())
+        .with(Piece::new())
+        .with(transform)
+        .build();
 }
 
 fn initialise_paddles(world: &mut World, sprite_sheet_handle: Handle<SpriteSheet>) {
@@ -178,12 +199,24 @@ fn initialise_scoreboard(world: &mut World) {
         &world.read_resource(),
     );
     let p1_transform = UiTransform::new(
-        "P1".to_string(), Anchor::TopMiddle, Anchor::TopMiddle,
-        -50., -50., 1., 200., 50.,
+        "P1".to_string(),
+        Anchor::TopMiddle,
+        Anchor::TopMiddle,
+        -50.,
+        -50.,
+        1.,
+        200.,
+        50.,
     );
     let p2_transform = UiTransform::new(
-        "P2".to_string(), Anchor::TopMiddle, Anchor::TopMiddle,
-        50., -50., 1., 200., 50.,
+        "P2".to_string(),
+        Anchor::TopMiddle,
+        Anchor::TopMiddle,
+        50.,
+        -50.,
+        1.,
+        200.,
+        50.,
     );
 
     let p1_score = world
