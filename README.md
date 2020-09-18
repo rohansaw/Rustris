@@ -1,2 +1,3 @@
 # Tetrust
-A simple Tetris made with Rust
+
+A simple Tetris made with Rust and amethyst.
