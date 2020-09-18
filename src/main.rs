@@ -8,6 +8,7 @@ use amethyst::{
         types::DefaultBackend,
         RenderingBundle,
     },
+    ui::{RenderUi, UiBundle},
     utils::application_root_dir,
 };
 
@@ -29,16 +30,18 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::default()
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
+        .with_bundle(UiBundle::<StringBindings>::new())?
         .with(systems::PaddleSystem, "paddle_system", &["input_system"])
         .with(systems::MoveBallsSystem, "ball_system", &[])
+        .with(systems::WinnerSystem, "winner_system", &["ball_system"])
         .with(
-
             systems::BounceSystem,
             "collision_system",
             &["paddle_system", "ball_system"],
         )
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
+                .with_plugin(RenderUi::default())
                 .with_plugin(
                     RenderToWindow::from_config_path(display_config_path)?
                         .with_clear([0.0, 0.0, 0.0, 1.0]),
