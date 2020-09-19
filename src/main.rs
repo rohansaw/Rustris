@@ -14,6 +14,7 @@ use amethyst::{
 
 mod tetris;
 mod systems;
+mod resources;
 
 use crate::tetris::Tetris;
 
@@ -31,14 +32,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
         .with_bundle(UiBundle::<StringBindings>::new())?
-        .with(systems::PaddleSystem, "paddle_system", &["input_system"])
-        .with(systems::MovePiecesSystem, "pieces_system", &[])
-        .with(systems::WinnerSystem, "winner_system", &["pieces_system"])
-        .with(
-            systems::BounceSystem,
-            "collision_system",
-            &["paddle_system", "pieces_system"],
-        )
+        .with(systems::MovePiecesSystem { counter: 0 }, "pieces_system", &[])
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 .with_plugin(RenderUi::default())
